@@ -11,21 +11,24 @@ app.prepare().then(() => {
   const server = new Koa()
   const router = new Router()
 
+  server.use(router.routes())
+  
   server.use(async (ctx, next) => {
     await handle(ctx.req, ctx.res)
     ctx.respond = false
   })
 
-  // router.get('/test', (ctx) => {
-  //   ctx.body = 'dss'
-  // })
+  // 路由映射。返回一个页面
+  router.get('/a/:id', async (ctx) => {
+    const id = ctx.params.id
+    await handle(ctx.req, ctx.res, {
+      pathname: '/a',
+      query: { id }
+    })
+    ctx.respond = false
+  })
 
-  // server.use(async (ctx, next) => {
-  //   ctx.body = '哈哈'
-  //   await next()
-  // })
-
-  server.use(router.routes())
+  
 
   server.listen(3000, () => {
     console.log("TCL: server on http://localhost:3000")
