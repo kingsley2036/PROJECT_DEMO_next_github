@@ -1,28 +1,31 @@
 import Link from 'next/link'
 import Router from 'next/router'
 import { Button } from 'antd'
+import { connect } from 'react-redux'
+import { update } from '../store/store'
+import { add } from '../store/store'
 
-const events = [
-  'routeChangeStart',
-  'routeChangeComplete',
-  'routeChangeError',
-  'beforeHistoryChange',
-  'hashChangeStart',
-  'hashChangeComplete'
-]
+// const events = [
+//   'routeChangeStart',
+//   'routeChangeComplete',
+//   'routeChangeError',
+//   'beforeHistoryChange',
+//   'hashChangeStart',
+//   'hashChangeComplete'
+// ]
 
-function makeEvent(type) {
-  return (...args) => {
-    console.log('TCL: makeEvent -> args', type, ...args)
-  }
-}
+// function makeEvent(type) {
+//   return (...args) => {
+//     console.log('TCL: makeEvent -> args', type, ...args)
+//   }
+// }
 
-events.forEach(event => {
-  Router.events.on(event, makeEvent(event))
-})
+// events.forEach(event => {
+//   Router.events.on(event, makeEvent(event))
+// })
 
 const color = '#ededed'
-const Home = () => {
+const Home = ({ counter, user, rename }) => {
   function getToA() {
     Router.push(
       {
@@ -37,6 +40,10 @@ const Home = () => {
 
   return (
     <>
+      <div>
+        redux---{counter}--{user}
+      </div>
+      <input type="text" value={user} onChange={(e) => rename(e.target.value)}/>
       <div>index</div>
       <style jsx global>{`
         div {
@@ -59,4 +66,24 @@ const Home = () => {
   // )
 }
 
-export default Home
+Home.getInitialProps = async ({reduxStore}) => {
+  reduxStore.dispatch(add(3))
+  reduxStore.dispatch(update('测试redux'))
+  return {}
+}
+
+function mapStateToProps(state) {
+  return {
+    counter: state.counter.count,
+    user: state.user.username
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    add: (num) => dispatch({type: 'ADD'}),
+    rename: (name) => dispatch({type: 'UPDATE_USERNAME', name})
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home)
