@@ -1,6 +1,15 @@
 const Koa = require('koa')
 const Router = require('koa-router')
 const next = require('next') // 作为中间件
+const session = require('koa-session')
+const Redis = require('ioredis')
+const config = require('./config')
+const auth = require('./server/auth')
+
+// redis配置
+const RedisSessionStore = require('./server/session-store')
+
+const redis = new Redis(config.redis)
 
 // 判断开发状态
 const dev = process.env.NODE_ENV !== 'production'
@@ -11,15 +20,40 @@ app.prepare().then(() => {
   const server = new Koa()
   const router = new Router()
 
-  server.use(router.routes())
-  
+  // 用来给cookie加密的,可以随便写
+  server.keys = ['Jocky develop Github App']
+  // 设置在浏览器的key叫什么名字
+  const SESSION_CONFIG = {
+    key: 'jid',
+    maxAge: 24 * 60 * 60 * 1000,
+    store: new RedisSessionStore(redis)
+  }
+
+  server.use(session(SESSION_CONFIG, server))
+
+  // 配置处理github oauth登录
+  auth(server)
+
   server.use(async (ctx, next) => {
-    await handle(ctx.req, ctx.res)
-    ctx.respond = false
+    // ctx.session = ctx.session || {}
+    // ctx.session.user = {
+    //   name: 'jokcy',
+    //   age: 19
+    // }
+
+    // if (!ctx.session.user) {
+    //   ctx.session.user = {
+    //     name: 'jokcy',
+    //     age: 18
+    //   }
+    // } else {
+      console.log('session is: ', ctx.session.githubAuth)
+    // }
+    await next()
   })
 
   // 路由映射。返回一个页面
-  router.get('/a/:id', async (ctx) => {
+  router.get('/a/:id', async ctx => {
     const id = ctx.params.id
     await handle(ctx.req, ctx.res, {
       pathname: '/a',
@@ -28,7 +62,7 @@ app.prepare().then(() => {
     ctx.respond = false
   })
 
-  router.get('/b/:id', async (ctx) => {
+  router.get('/b/:id', async ctx => {
     const id = ctx.params.id
     await handle(ctx.req, ctx.res, {
       pathname: '/b',
@@ -37,7 +71,39 @@ app.prepare().then(() => {
     ctx.respond = false
   })
 
+  // 获取用户信息
+  router.get('/api/user/info', async ctx => {
+    const user = ctx.session.userInfo
+    if(!user) {
+      ctx.status = 401
+      ctx.body = 'Need Login'
+    } else {
+      ctx.body = user
+      ctx.set('Content-Type', 'application/json')
+    }
+  })
+
+  // router.get('/set/user', async ctx => {
+  //   ctx.session.user = {
+  //     name: 'jokcy',
+  //     age: 19
+  //   }
+  //   ctx.body = 'set session'
+  // })
+
+  // router.get('/del/user', async ctx => {
+  //   ctx.session = null
+  //   ctx.body = 'del session'
+  // })
+
+  server.use(router.routes())
+
+  server.use(async (ctx, next) => {
+    await handle(ctx.req, ctx.res)
+    ctx.respond = false
+  })
+
   server.listen(3000, () => {
-    console.log("TCL: server on http://localhost:3000")
+    console.log('TCL: server on http://localhost:3000')
   })
 })

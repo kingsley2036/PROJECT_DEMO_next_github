@@ -1,9 +1,15 @@
+import { useEffect } from 'react'
+import axios from 'axios'
 import Link from 'next/link'
 import Router from 'next/router'
 import { Button } from 'antd'
 import { connect } from 'react-redux'
+import getConfig from 'next/config'
+
 import { update } from '../store/store'
 import { add } from '../store/store'
+
+const { publicRuntimeConfig } = getConfig()
 
 // const events = [
 //   'routeChangeStart',
@@ -38,13 +44,20 @@ const Home = ({ counter, user, rename }) => {
     )
   }
 
+  useEffect(() => {
+    axios.get('/api/user/info').then(resp => {
+      console.log('TCL: Home -> resp', resp)
+    })
+  }, [])
+
   return (
     <>
       <div>
         redux---{counter}--{user}
       </div>
-      <input type="text" value={user} onChange={(e) => rename(e.target.value)}/>
+      <input type="text" value={user} onChange={e => rename(e.target.value)} />
       <div>index</div>
+      <a href={publicRuntimeConfig.OAUTH_URL}>登录</a>
       <style jsx global>{`
         div {
           font-size: 32px;
@@ -66,7 +79,7 @@ const Home = ({ counter, user, rename }) => {
   // )
 }
 
-Home.getInitialProps = async ({reduxStore}) => {
+Home.getInitialProps = async ({ reduxStore }) => {
   reduxStore.dispatch(add(3))
   reduxStore.dispatch(update('测试redux'))
   return {}
@@ -81,8 +94,8 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    add: (num) => dispatch({type: 'ADD'}),
-    rename: (name) => dispatch({type: 'UPDATE_USERNAME', name})
+    add: num => dispatch({ type: 'ADD' }),
+    rename: name => dispatch({ type: 'UPDATE_USERNAME', name })
   }
 }
 
