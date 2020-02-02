@@ -9,7 +9,7 @@ class RedisSessionStore {
 
   // 获取数据
   async get(sid) {
-    console.log("TCL: RedisSessionStore -> get -> sid", sid)
+    // console.log("TCL: RedisSessionStore -> get -> sid", sid)
     const id = getRedisSessionId(sid)
     const data = await this.client.get(id)
     if (!data) {
@@ -27,7 +27,7 @@ class RedisSessionStore {
   // 存储
   // 参数id , 存储值, 过期时间ms
   async set(sid, sess, ttl) {
-    console.log("TCL: RedisSessionStore -> set -> sid, sess, ttl", sid, sess, ttl)
+    console.log("TCL: RedisSessionStore -> set", sid, sess, ttl)
     const id = getRedisSessionId(sid)
     
     if (typeof ttl === 'number') {

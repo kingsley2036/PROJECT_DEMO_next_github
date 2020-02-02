@@ -25,7 +25,7 @@ module.exports = (server) => {
           Accept: 'application/json'
         }
       })
-      console.log("TCL: result", result.data)
+      // console.log("TCL: result", result.data)
 
       if(result.status === 200 && (result.data && !result.data.error)) {
         console.log("TCL: 获取token成功")
@@ -43,12 +43,39 @@ module.exports = (server) => {
         // console.log("TCL: userInfoResp", userInfoResp)
         ctx.session.userInfo = userInfoResp.data
         
-        ctx.redirect('/')
+        ctx.redirect((ctx.session && ctx.session.urlBeforeOAuth) ? ctx.session.urlBeforeOAuth: '/')
+        if(ctx.session) {
+          ctx.session.urlBeforeOAuth = ''
+        }
       } else {
         console.log("TCL: 获取token失败")
         const errorMsg = result.data && result.data.error
         ctx.body = `request token failed ${errorMsg}`
       }
+    } else {
+      await next()
+    }
+  })
+
+  server.use(async (ctx, next) => {
+    const { path, method } = ctx
+    if(path === '/loginout' && method === 'POST') {
+      ctx.session = null
+      ctx.body = `loginout success`
+    } else {
+      await next()
+    }
+  })
+
+  server.use(async (ctx, next) => {
+    const { path, method } = ctx
+    // 记录授权登录之前的页面地址
+    // 作为授权成功后返回的地址
+    if(path === '/prepare-auth' && method === 'GET') {
+      const { url } = ctx.query
+      ctx.session.urlBeforeOAuth = url
+      // ctx.body = 'ready'
+      ctx.redirect(`${config.OAUTH_URL}`)
     } else {
       await next()
     }

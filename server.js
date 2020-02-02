@@ -34,71 +34,23 @@ app.prepare().then(() => {
   // 配置处理github oauth登录
   auth(server)
 
-  server.use(async (ctx, next) => {
-    // ctx.session = ctx.session || {}
-    // ctx.session.user = {
-    //   name: 'jokcy',
-    //   age: 19
-    // }
-
-    // if (!ctx.session.user) {
-    //   ctx.session.user = {
-    //     name: 'jokcy',
-    //     age: 18
-    //   }
-    // } else {
-      console.log('session is: ', ctx.session.githubAuth)
-    // }
-    await next()
-  })
-
-  // 路由映射。返回一个页面
-  router.get('/a/:id', async ctx => {
-    const id = ctx.params.id
-    await handle(ctx.req, ctx.res, {
-      pathname: '/a',
-      query: { id }
-    })
-    ctx.respond = false
-  })
-
-  router.get('/b/:id', async ctx => {
-    const id = ctx.params.id
-    await handle(ctx.req, ctx.res, {
-      pathname: '/b',
-      query: { id }
-    })
-    ctx.respond = false
-  })
-
-  // 获取用户信息
-  router.get('/api/user/info', async ctx => {
-    const user = ctx.session.userInfo
-    if(!user) {
-      ctx.status = 401
-      ctx.body = 'Need Login'
-    } else {
-      ctx.body = user
-      ctx.set('Content-Type', 'application/json')
-    }
-  })
-
-  // router.get('/set/user', async ctx => {
-  //   ctx.session.user = {
-  //     name: 'jokcy',
-  //     age: 19
+  // // 获取用户信息
+  // router.get('/api/user/info', async ctx => {
+  //   const user = ctx.session.userInfo
+  //   if(!user) {
+  //     ctx.status = 401
+  //     ctx.body = 'Need Login'
+  //   } else {
+  //     ctx.body = user
+  //     ctx.set('Content-Type', 'application/json')
   //   }
-  //   ctx.body = 'set session'
   // })
 
-  // router.get('/del/user', async ctx => {
-  //   ctx.session = null
-  //   ctx.body = 'del session'
-  // })
 
   server.use(router.routes())
 
   server.use(async (ctx, next) => {
+    ctx.req.session = ctx.session
     await handle(ctx.req, ctx.res)
     ctx.respond = false
   })
