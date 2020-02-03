@@ -1,10 +1,10 @@
 import App from 'next/app'
 import Layout from '../components/Layout'
 import { Provider } from 'react-redux'
-import hoc from '../lib/with-redux'
+import withRedux from '../lib/with-redux'
 import PageLoading from '../components/PageLoading'
 import Router from 'next/router'
-import Link from 'next/link'
+import 'antd/dist/antd.css' // 用这个方法导入，antd不会出现样式冲突警告
 
 // 自定义app
 class myApp extends App {
@@ -55,8 +55,6 @@ class myApp extends App {
       <Provider store={reduxStore}>
         {this.state.loading ? <PageLoading /> : null}
         <Layout>
-          <Link href="/"><a >跳转主页</a></Link>
-          <Link href="/detail"><a >跳转详情</a></Link>
           <Component {...pageProps}></Component>
         </Layout>
       </Provider>
@@ -64,4 +62,4 @@ class myApp extends App {
   }
 }
 
-export default hoc(myApp)
+export default withRedux(myApp)
