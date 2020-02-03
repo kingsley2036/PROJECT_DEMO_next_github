@@ -3,8 +3,11 @@ const Router = require('koa-router')
 const next = require('next') // 作为中间件
 const session = require('koa-session')
 const Redis = require('ioredis')
+const koaBody = require('koa-body')
+
 const config = require('./config')
 const auth = require('./server/auth')
+const api = require('./server/api')
 
 // redis配置
 const RedisSessionStore = require('./server/session-store')
@@ -29,23 +32,13 @@ app.prepare().then(() => {
     store: new RedisSessionStore(redis)
   }
 
+  server.use(koaBody())
   server.use(session(SESSION_CONFIG, server))
 
   // 配置处理github oauth登录
   auth(server)
-
-  // // 获取用户信息
-  // router.get('/api/user/info', async ctx => {
-  //   const user = ctx.session.userInfo
-  //   if(!user) {
-  //     ctx.status = 401
-  //     ctx.body = 'Need Login'
-  //   } else {
-  //     ctx.body = user
-  //     ctx.set('Content-Type', 'application/json')
-  //   }
-  // })
-
+  // 获取github数据
+  api(server)
 
   server.use(router.routes())
 

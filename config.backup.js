@@ -5,6 +5,7 @@ const client_id = ''
 
 module.exports = {
   github: {
+    github_base_url: 'https://api.github.com',
     request_token_url: 'https://github.com/login/oauth/access_token',
     client_id,
     client_secret: ''

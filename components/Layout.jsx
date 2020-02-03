@@ -1,15 +1,15 @@
 import { useState, useCallback } from 'react'
-import getConfig from 'next/config'
+// import getConfig from 'next/config'
 import { connect } from 'react-redux'
 import { withRouter } from 'next/router'
-import axios from 'axios'
-import {loginout} from '../store/store'
+import { loginout } from '../store/store'
 
 import { Layout, Icon, Input, Avatar, Tooltip, Dropdown, Menu } from 'antd'
+import Link from 'next/link'
 
 import Container from './Container'
 
-const { publicRuntimeConfig } = getConfig()
+// const { publicRuntimeConfig } = getConfig()
 const { Header, Content, Footer } = Layout
 
 const githubIconStyle = {
@@ -24,10 +24,9 @@ const footerStyle = {
   textAlign: 'center'
 }
 
-// const Comp = ({color, children, style}) => (<div style={{color,...style}}>{children}</div>)
-
 function MyLayout({ children, user, loginout, router }) {
-  const [search, setSearch] = useState('')
+  const urlQuery = router.query && router.query.query
+  const [search, setSearch] = useState(urlQuery || '')
 
   // 监听搜索框内容变化
   const handleSearchChange = useCallback(e => {
@@ -36,10 +35,12 @@ function MyLayout({ children, user, loginout, router }) {
   }, [])
 
   // 搜索仓库
-  const handleOnSearch = useCallback(() => {}, [])
+  const handleOnSearch = useCallback((e) => {
+    router.push(`/search?query=${search}`)
+  }, [search])
 
   // 登出
-  const handleloginout = (e) => {
+  const handleloginout = e => {
     loginout()
     e.preventDefault()
   }
@@ -54,7 +55,7 @@ function MyLayout({ children, user, loginout, router }) {
   //     }
   //   }).catch(err => {
   //     console.log("TCL: prepare auth fail", err)
-  //   }) 
+  //   })
   //   e.preventDefault()
   // }
 
@@ -75,7 +76,9 @@ function MyLayout({ children, user, loginout, router }) {
         <Container renderer={<div className="header-inner" />}>
           <div className="header-left">
             <div className="logo">
-              <Icon type="github" style={githubIconStyle} />
+              <Link href="/">
+                <a ><Icon type="github" style={githubIconStyle} /></a>
+              </Link>
             </div>
             <div>
               <Input.Search
@@ -132,11 +135,14 @@ function MyLayout({ children, user, loginout, router }) {
             height: 100%;
           }
           .ant-layout {
-            height: 100%;
+            min-height: 100%;
           }
           .ant-layout-header {
             padding-left: 0;
             padding-right: 0;
+          }
+          .ant-layout-content {
+            background: #fff;
           }
         `}
       </style>
@@ -144,12 +150,15 @@ function MyLayout({ children, user, loginout, router }) {
   )
 }
 
-export default connect(function mapState(state) {
-  return {
-    user: state.user
+export default connect(
+  function mapState(state) {
+    return {
+      user: state.user
+    }
+  },
+  function mapReducer(dispatch) {
+    return {
+      loginout: () => dispatch(loginout())
+    }
   }
-},function mapReducer(dispatch){
-  return {
-    loginout: () => dispatch(loginout())
-  }
-})(withRouter(MyLayout))
+)(withRouter(MyLayout))

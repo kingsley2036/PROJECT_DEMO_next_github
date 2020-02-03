@@ -2,12 +2,38 @@ import App from 'next/app'
 import Layout from '../components/Layout'
 import { Provider } from 'react-redux'
 import hoc from '../lib/with-redux'
+import PageLoading from '../components/PageLoading'
+import Router from 'next/router'
+import Link from 'next/link'
 
 // 自定义app
 class myApp extends App {
   state = {
-    msg: '全局的',
-    context: 'value'
+    loading: false
+  }
+
+  startLoading = () => {
+    this.setState({
+      loading: true
+    })
+  }
+
+  stopLoading = () => {
+    this.setState({
+      loading: false
+    })
+  }
+
+  componentDidMount() {
+    Router.events.on('routeChangeStart', this.startLoading)
+    Router.events.on('routeChangeComplete', this.stopLoading)
+    Router.events.on('routeChangeError', this.stopLoading)
+  }
+
+  componentWillUnmount() {
+    Router.events.off('routeChangeStart', this.startLoading)
+    Router.events.off('routeChangeComplete', this.stopLoading)
+    Router.events.off('routeChangeError', this.stopLoading)
   }
 
   // 这个方法每次页面切换都会调用
@@ -27,7 +53,10 @@ class myApp extends App {
 
     return (
       <Provider store={reduxStore}>
+        {this.state.loading ? <PageLoading /> : null}
         <Layout>
+          <Link href="/"><a >跳转主页</a></Link>
+          <Link href="/detail"><a >跳转详情</a></Link>
           <Component {...pageProps}></Component>
         </Layout>
       </Provider>

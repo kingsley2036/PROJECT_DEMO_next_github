@@ -1,7 +1,15 @@
-const detail = () => {
+const Detail = () => {
   return (
     <div>detail</div>
   )
 }
 
-export default detail
+Detail.getInitialProps = () => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve({})
+    }, 1000)
+  })
+}
+
+export default Detail
