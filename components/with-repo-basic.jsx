@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import { withRouter } from 'next/router'
+import {useEffect} from 'react'
 
 import { request } from '../lib/api'
 import Repo from './/Repo'
+import {cache, get} from '../lib/repo-basic-cache'
 
 function makeQuery(queryObject) {
   const query = Object.entries(queryObject)
@@ -15,10 +17,17 @@ function makeQuery(queryObject) {
   return `?${query}`
 }
 
+const isServer = typeof window === 'undefined'
+
 export default (Comp, type = 'index') => {
   const withDetail = ({ repobasic, router, ...rest }) => {
     console.log('TCL: Detail -> repobasic', repobasic)
     const query = makeQuery(router.query)
+
+    useEffect(() => {
+      !isServer && cache(repobasic)
+    }, [])
+
     return (
       <div className="root">
         <div className="repo-basic">
@@ -65,6 +74,21 @@ export default (Comp, type = 'index') => {
     const { ctx } = context
     const { owner, name } = ctx.query
 
+    const full_name = `${owner}/${name}`
+
+    let pageData = {}
+    if (Comp.getInitialProps) {
+      pageData = await Comp.getInitialProps(context)
+      // console.log('TCL: pageData', pageData)
+    }
+
+    if(get(full_name)) {
+      return {
+        repobasic: get(full_name),
+        ...pageData
+      }
+    } 
+
     const repoBasic = await request(
       {
         url: `/repos/${owner}/${name}`
@@ -72,12 +96,6 @@ export default (Comp, type = 'index') => {
       ctx.req,
       ctx.res
     )
-
-    let pageData = {}
-    if (Comp.getInitialProps) {
-      pageData = await Comp.getInitialProps(context)
-      // console.log('TCL: pageData', pageData)
-    }
 
     return {
       repobasic: repoBasic.data,

@@ -1,11 +1,13 @@
 import { withRouter } from 'next/router'
-import { memo, isValidElement } from 'react'
+import { memo, isValidElement, useEffect } from 'react'
 import { Row, Col, List, Pagination } from 'antd'
 import Link from 'next/link'
 
 import { request } from '../lib/api'
 import Repo from '../components/Repo'
+import {cacheArray} from '../lib/repo-basic-cache'
 
+const isServer = typeof window === 'undefined'
 const per_page = 20
 const LANGUAGE = ['JavaScript', 'HTML', 'CSS', 'TypeScript', 'Java', 'Python']
 const SORT_TYPE = [
@@ -77,6 +79,10 @@ function noop() {}
 const Search = ({ router, repos }) => {
   const query = router.query
   const { lang, sort, order, page } = router.query
+
+  useEffect(() => {
+    !isServer &&  cacheArray(repos.items)
+  }, [])
 
   return (
     <div className="root">

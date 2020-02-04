@@ -7,6 +7,7 @@ import LRU from 'lru-cache'
 
 import Repo from '../components/Repo'
 import { request } from '../lib/api'
+import {cacheArray} from '../lib/repo-basic-cache'
 
 const cache = new LRU({
   maxAge: 1000 * 60 * 10 // 有效期十分钟
@@ -31,10 +32,21 @@ const Index = ({ userRepos, userStaredRepos, user, router }) => {
       //   cachedUserRepos = null
       //   cachedUserStaredRepos = null
       // }, 10 * 1000)
+      
       userRepos && cache.set('userRepos', userRepos)
       userStaredRepos && cache.set('userStaredRepos', userStaredRepos)
+
+      
     }
   }, [userRepos, userStaredRepos])
+
+  // 缓存每个仓库的数据
+  useEffect(() => {
+    if(!isServer) {
+      userRepos && cacheArray(userRepos)
+      userStaredRepos && cacheArray(userStaredRepos)
+    }
+  }, [])
 
   if (!user || !user.id) {
     return (
