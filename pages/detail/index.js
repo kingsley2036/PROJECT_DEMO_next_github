@@ -1,12 +1,28 @@
 import withRopoBasic from '../../components/with-repo-basic'
+import { request } from '../../lib/api'
+import dynamic from 'next/dynamic'
 
-const Detail = ({test}) => {
-return <span>detail {test}</span>
+const MDRenderer = dynamic(() => import('../../components/MarkdownRenderer'),{
+  loading: ()=> (<p>Loading</p>)
+}) // 动态导入
+
+const Detail = ({ readme }) => {
+  return (
+    <MDRenderer content={readme.content} isBase64={true}/>
+  )
 }
 
-Detail.getInitialProps = async () => {
+Detail.getInitialProps = async ({ ctx: { query: {owner, name}, req, res } }) => {
+  const readmeResp = await request(
+    {
+      url: `/repos/${owner}/${name}/readme`
+    },
+    req,
+    res
+  )
+
   return {
-    test: 123
+    readme: readmeResp.data
   }
 }
 
@@ -47,7 +63,7 @@ export default withRopoBasic(Detail, 'index')
 //       <style jsx>{`
 //         .root {
 //           padding-top: 20px;
-//         }  
+//         }
 //         .repo-basic {
 //           padding: 20px;
 //           border: 1px solid #eee;

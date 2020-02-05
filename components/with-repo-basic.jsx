@@ -21,7 +21,7 @@ const isServer = typeof window === 'undefined'
 
 export default (Comp, type = 'index') => {
   const withDetail = ({ repobasic, router, ...rest }) => {
-    console.log('TCL: Detail -> repobasic', repobasic)
+    // console.log('TCL: Detail -> repobasic', repobasic)
     const query = makeQuery(router.query)
 
     useEffect(() => {
