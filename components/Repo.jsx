@@ -1,13 +1,9 @@
 import Link from 'next/link'
 import { Icon } from 'antd'
-import moment from 'moment'
+import { getLastUpdated } from '../lib/utils'
 
 function getLicense(license) {
   return license ? `${license.spdx_id} license` : ''
-}
-
-function getLastUpdated(time) {
-  return moment(time).fromNow()
 }
 
 export default ({ repo }) => {
@@ -21,16 +17,22 @@ export default ({ repo }) => {
         </h3>
         <p className="repo-desc">{repo.description}</p>
         <p className="other-info">
-          {
-            repo.license? (<span className="license">{getLicense(repo.license)}</span>) : null
-          }
-          <span className="last-updated">{getLastUpdated(repo.updated_at)}</span>
-          <span className="open-issues">{repo.open_issues_count} open issues</span>
+          {repo.license ? (
+            <span className="license">{getLicense(repo.license)}</span>
+          ) : null}
+          <span className="last-updated">
+            {getLastUpdated(repo.updated_at)}
+          </span>
+          <span className="open-issues">
+            {repo.open_issues_count} open issues
+          </span>
         </p>
       </div>
       <div className="lang-star">
         <span className="lang">{repo.language}</span>
-        <span className="stars">{repo.stargazers_count} <Icon type="star" theme="filled"/></span>
+        <span className="stars">
+          {repo.stargazers_count} <Icon type="star" theme="filled" />
+        </span>
       </div>
       <style jsx>{`
         .root {

@@ -18,7 +18,7 @@ module.exports = server => {
           'Authorization'
         ] = `${githubAuth.token_type} ${githubAuth.access_token}`
       }
-
+      console.log('服务器转发请求', url);
       // post请求从body里去参数
       // get直接url拿参数就行
       const result = await requestGithub(method, url, ctx.request.body || {}, headers)
